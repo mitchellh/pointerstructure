@@ -3,8 +3,6 @@ package pointerstructure
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 // Set writes a value v to the pointer p in structure s.
@@ -58,27 +56,15 @@ func (p *Pointer) Set(s, v interface{}) (interface{}, error) {
 }
 
 func (p *Pointer) setMap(part string, m, value reflect.Value) error {
-	// Determine the key type so we can convert into it
-	keyType := m.Type().Key()
-	key := reflect.New(keyType)
-	if err := mapstructure.WeakDecode(part, key.Interface()); err != nil {
-		return fmt.Errorf(
-			"couldn't convert key %q to type %s", part, keyType.String())
+	key, err := coerce(reflect.ValueOf(part), m.Type().Key())
+	if err != nil {
+		return err
 	}
 
-	// Convert into value type
-	elemType := m.Type().Elem()
-	elem := reflect.New(elemType)
-	if err := mapstructure.WeakDecode(value.Interface(), elem.Interface()); err != nil {
-		return fmt.Errorf(
-			"couldn't convert value %#v to type %s",
-			value.Interface(), elemType.String())
+	elem, err := coerce(value, m.Type().Elem())
+	if err != nil {
+		return err
 	}
-
-	// Need to dereference the pointer since reflect.New always
-	// creates a pointer.
-	key = reflect.Indirect(key)
-	elem = reflect.Indirect(elem)
 
 	// Set the key
 	m.SetMapIndex(key, elem)
@@ -86,17 +72,23 @@ func (p *Pointer) setMap(part string, m, value reflect.Value) error {
 }
 
 func (p *Pointer) setSlice(part string, s, value reflect.Value) error {
-	// Determine the key type so we can convert into it
-	var idx int
-	if err := mapstructure.WeakDecode(part, &idx); err != nil {
-		return fmt.Errorf(
-			"couldn't convert key %q to int for slice", part)
+	// Coerce the key to an int
+	idxVal, err := coerce(reflect.ValueOf(part), reflect.TypeOf(42))
+	if err != nil {
+		return err
 	}
+	idx := int(idxVal.Int())
 
 	// Verify we're within bounds
 	if idx < 0 || idx >= s.Len() {
 		return fmt.Errorf(
 			"index %d is out of range (length = %d)", idx, s.Len())
+	}
+
+	// Coerce the value
+	value, err = coerce(value, s.Type().Elem())
+	if err != nil {
+		return err
 	}
 
 	// Set the key

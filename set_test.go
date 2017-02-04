@@ -88,6 +88,15 @@ func TestPointerSet(t *testing.T) {
 			[]interface{}{42, "baz", 168},
 			false,
 		},
+
+		{
+			"slice index value coerce",
+			[]string{"0"},
+			[]int{42},
+			"84",
+			[]int{84},
+			false,
+		},
 	}
 
 	for i, tc := range cases {

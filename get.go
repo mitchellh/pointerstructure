@@ -3,8 +3,6 @@ package pointerstructure
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 // Get reads the value out of the total value v.
@@ -50,17 +48,11 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 func (p *Pointer) getMap(part string, m reflect.Value) (reflect.Value, error) {
 	var zeroValue reflect.Value
 
-	// Determine the key type so we can convert into it
-	keyType := m.Type().Key()
-	key := reflect.New(keyType)
-	if err := mapstructure.WeakDecode(part, key.Interface()); err != nil {
-		return zeroValue, fmt.Errorf(
-			"couldn't convert key %q to type %s", part, keyType.String())
+	// Coerce the string part to the correct key type
+	key, err := coerce(reflect.ValueOf(part), m.Type().Key())
+	if err != nil {
+		return zeroValue, err
 	}
-
-	// Need to dereference the pointer since reflect.New always
-	// creates a pointer.
-	key = reflect.Indirect(key)
 
 	// Verify that the key exists
 	found := false
@@ -81,12 +73,12 @@ func (p *Pointer) getMap(part string, m reflect.Value) (reflect.Value, error) {
 func (p *Pointer) getSlice(part string, v reflect.Value) (reflect.Value, error) {
 	var zeroValue reflect.Value
 
-	// Determine the key type so we can convert into it
-	var idx int
-	if err := mapstructure.WeakDecode(part, &idx); err != nil {
-		return zeroValue, fmt.Errorf(
-			"couldn't convert key %q to int for slice", part)
+	// Coerce the key to an int
+	idxVal, err := coerce(reflect.ValueOf(part), reflect.TypeOf(42))
+	if err != nil {
+		return zeroValue, err
 	}
+	idx := int(idxVal.Int())
 
 	// Verify we're within bounds
 	if idx < 0 || idx >= v.Len() {

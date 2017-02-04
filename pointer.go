@@ -4,6 +4,13 @@
 // The syntax used is based on JSON Pointer (RFC 6901).
 package pointerstructure
 
+import (
+	"fmt"
+	"reflect"
+
+	"github.com/mitchellh/mapstructure"
+)
+
 // Pointer represents a pointer to a specific value. You can construct
 // a pointer manually or use Parse.
 type Pointer struct {
@@ -66,4 +73,31 @@ func (p *Pointer) Parent() *Pointer {
 // IsRoot returns true if this pointer represents the root document.
 func (p *Pointer) IsRoot() bool {
 	return len(p.Parts) == 0
+}
+
+// coerce is a helper to coerce a value to a specific type if it must
+// and if its possible. If it isn't possible, an error is returned.
+func coerce(value reflect.Value, to reflect.Type) (reflect.Value, error) {
+	// If the value is already assignable to the type, then let it go
+	if value.Type().AssignableTo(to) {
+		return value, nil
+	}
+
+	// If a direct conversion is possible, do that
+	if value.Type().ConvertibleTo(to) {
+		return value.Convert(to), nil
+	}
+
+	// Create a new value to hold our result
+	result := reflect.New(to)
+
+	// Decode
+	if err := mapstructure.WeakDecode(value.Interface(), result.Interface()); err != nil {
+		return result, fmt.Errorf(
+			"couldn't convert value %#v to type %s",
+			value.Interface(), to.String())
+	}
+
+	// We need to indirect the value since reflect.New always creates a pointer
+	return reflect.Indirect(result), nil
 }
