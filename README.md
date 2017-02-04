@@ -59,6 +59,11 @@ if err != nil {
 	panic(err)
 }
 
+value, err = pointerstructure.Get(complex, "/bob/0/name")
+if err != nil {
+	panic(err)
+}
+
 fmt.Printf("%s", value)
 // Output:
 // Alice
