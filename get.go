@@ -27,6 +27,10 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 			currentVal = currentVal.Elem()
 		}
 
+		for currentVal.Kind() == reflect.Ptr {
+			currentVal = reflect.Indirect(currentVal)
+		}
+
 		f, ok := funcMap[currentVal.Kind()]
 		if !ok {
 			return nil, fmt.Errorf(

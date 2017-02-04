@@ -112,7 +112,7 @@ func TestPointerGet(t *testing.T) {
 		{
 			"array key",
 			[]string{"3"},
-			[5]interface{}{"a", "b", "c", "d", "e"},
+			&[5]interface{}{"a", "b", "c", "d", "e"},
 			"d",
 			false,
 		},
