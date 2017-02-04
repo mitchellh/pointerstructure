@@ -17,6 +17,8 @@ input on structures, diffs of structures, etc.
 
   * Set the value for an address within an existing structure.
 
+  * Sorting a list of addresses
+
 ## Installation
 
 Standard `go get`:
