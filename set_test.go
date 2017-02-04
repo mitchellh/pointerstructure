@@ -90,6 +90,15 @@ func TestPointerSet(t *testing.T) {
 		},
 
 		{
+			"slice index append",
+			[]string{"-"},
+			[]interface{}{42},
+			"baz",
+			[]interface{}{42, "baz"},
+			false,
+		},
+
+		{
 			"slice index value coerce",
 			[]string{"0"},
 			[]int{42},
@@ -111,7 +120,7 @@ func TestPointerSet(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(actual, tc.Output) {
-				t.Fatalf("bad: %#v", actual)
+				t.Fatalf("bad: %#v != %#v", actual, tc.Output)
 			}
 		})
 	}

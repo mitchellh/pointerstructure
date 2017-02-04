@@ -29,7 +29,7 @@ func (p *Pointer) Set(s, v interface{}) (interface{}, error) {
 	}
 
 	// Map for lookup of getter to call for type
-	funcMap := map[reflect.Kind]func(string, reflect.Value, reflect.Value) error{
+	funcMap := map[reflect.Kind]setFunc{
 		reflect.Array: p.setSlice,
 		reflect.Map:   p.setMap,
 		reflect.Slice: p.setSlice,
@@ -48,50 +48,75 @@ func (p *Pointer) Set(s, v interface{}) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("set %s: invalid value kind: %s", p, val.Kind())
 	}
-	if err := f(p.Parts[len(p.Parts)-1], val, reflect.ValueOf(v)); err != nil {
+
+	result, err := f(originalS, val, reflect.ValueOf(v))
+	if err != nil {
 		return nil, fmt.Errorf("set %s: %s", p, err)
 	}
 
-	return originalS, nil
+	return result, nil
 }
 
-func (p *Pointer) setMap(part string, m, value reflect.Value) error {
+type setFunc func(interface{}, reflect.Value, reflect.Value) (interface{}, error)
+
+func (p *Pointer) setMap(root interface{}, m, value reflect.Value) (interface{}, error) {
+	part := p.Parts[len(p.Parts)-1]
 	key, err := coerce(reflect.ValueOf(part), m.Type().Key())
 	if err != nil {
-		return err
+		return root, err
 	}
 
 	elem, err := coerce(value, m.Type().Elem())
 	if err != nil {
-		return err
+		return root, err
 	}
 
 	// Set the key
 	m.SetMapIndex(key, elem)
-	return nil
+	return root, nil
 }
 
-func (p *Pointer) setSlice(part string, s, value reflect.Value) error {
+func (p *Pointer) setSlice(root interface{}, s, value reflect.Value) (interface{}, error) {
+	// Coerce the value, we'll need that no matter what
+	value, err := coerce(value, s.Type().Elem())
+	if err != nil {
+		return root, err
+	}
+
+	// If the part is the special "-", that means to append it (RFC6901 4.)
+	part := p.Parts[len(p.Parts)-1]
+	if part == "-" {
+		return p.setSliceAppend(root, s, value)
+	}
+
 	// Coerce the key to an int
 	idxVal, err := coerce(reflect.ValueOf(part), reflect.TypeOf(42))
 	if err != nil {
-		return err
+		return root, err
 	}
 	idx := int(idxVal.Int())
 
 	// Verify we're within bounds
 	if idx < 0 || idx >= s.Len() {
-		return fmt.Errorf(
+		return root, fmt.Errorf(
 			"index %d is out of range (length = %d)", idx, s.Len())
-	}
-
-	// Coerce the value
-	value, err = coerce(value, s.Type().Elem())
-	if err != nil {
-		return err
 	}
 
 	// Set the key
 	s.Index(idx).Set(value)
-	return nil
+	return root, nil
+}
+
+func (p *Pointer) setSliceAppend(root interface{}, s, value reflect.Value) (interface{}, error) {
+	// Coerce the value, we'll need that no matter what. This should
+	// be a no-op since we expect it to be done already, but there is
+	// a fast-path check for that in coerce so do it anyways.
+	value, err := coerce(value, s.Type().Elem())
+	if err != nil {
+		return root, err
+	}
+
+	// We can assume "s" is the parent of pointer value. We need to actually
+	// write s back because Append can return a new slice.
+	return p.Parent().Set(root, reflect.Append(s, value).Interface())
 }
