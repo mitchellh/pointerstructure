@@ -15,7 +15,9 @@ input on structures, diffs of structures, etc.
 
   * Get the value for an address
 
-  * Set the value for an address within an existing structure.
+  * Set the value for an address within an existing structure
+
+  * Delete the value at an address
 
   * Sorting a list of addresses
 
