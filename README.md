@@ -15,7 +15,7 @@ input on structures, diffs of structures, etc.
 
   * Get the value for an address
 
-  * Get the address for a value within a structure
+  * Set the value for an address within an existing structure.
 
 ## Installation
 
