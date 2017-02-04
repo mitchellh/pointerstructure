@@ -63,6 +63,15 @@ func TestPointerSet(t *testing.T) {
 		},
 
 		{
+			"map value type coercse",
+			[]string{"foo"},
+			map[string]int{"foo": 12},
+			"42",
+			map[string]int{"foo": 42},
+			false,
+		},
+
+		{
 			"slice index",
 			[]string{"0"},
 			[]interface{}{42},

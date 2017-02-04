@@ -66,24 +66,22 @@ func (p *Pointer) setMap(part string, m, value reflect.Value) error {
 			"couldn't convert key %q to type %s", part, keyType.String())
 	}
 
+	// Convert into value type
+	elemType := m.Type().Elem()
+	elem := reflect.New(elemType)
+	if err := mapstructure.WeakDecode(value.Interface(), elem.Interface()); err != nil {
+		return fmt.Errorf(
+			"couldn't convert value %#v to type %s",
+			value.Interface(), elemType.String())
+	}
+
 	// Need to dereference the pointer since reflect.New always
 	// creates a pointer.
 	key = reflect.Indirect(key)
+	elem = reflect.Indirect(elem)
 
-	// Verify that the key exists
-	found := false
-	for _, k := range m.MapKeys() {
-		if k.Interface() == key.Interface() {
-			found = true
-			break
-		}
-	}
-	if !found {
-		return fmt.Errorf("couldn't find key %#v", key.Interface())
-	}
-
-	// Get the key
-	m.SetMapIndex(key, value)
+	// Set the key
+	m.SetMapIndex(key, elem)
 	return nil
 }
 
