@@ -32,5 +32,21 @@ For usage and examples see the [Godoc](http://godoc.org/github.com/mitchellh/poi
 A quick code example is shown below:
 
 ```go
-TODO
+complex := map[string]interface{}{
+	"alice": 42,
+	"bob": []interface{}{
+		map[string]interface{}{
+			"name": "Bob",
+		},
+	},
+}
+
+value, err := pointerstructure.Get(complex, "/bob/0/name")
+if err != nil {
+	panic(err)
+}
+
+fmt.Printf("%s", value)
+// Output:
+// Bob
 ```

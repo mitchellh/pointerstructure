@@ -45,3 +45,13 @@ func Parse(input string) (*Pointer, error) {
 
 	return &Pointer{Parts: parts}, nil
 }
+
+// MustParse is like Parse but panics if the input cannot be parsed.
+func MustParse(input string) *Pointer {
+	p, err := Parse(input)
+	if err != nil {
+		panic(err)
+	}
+
+	return p
+}

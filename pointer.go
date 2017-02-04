@@ -12,3 +12,17 @@ type Pointer struct {
 	// the Parse functions.
 	Parts []string
 }
+
+// Get reads the value at the given pointer.
+//
+// This is a shorthand for calling Parse on the pointer and then calling Get
+// on that result. An error will be returned if the value cannot be found or
+// there is an error with the format of pointer.
+func Get(value interface{}, pointer string) (interface{}, error) {
+	p, err := Parse(pointer)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.Get(value)
+}
