@@ -55,7 +55,7 @@ fmt.Printf("%s", value)
 
 Continuing the example above, you can also set values:
 
-```
+```go
 value, err = pointerstructure.Set(complex, "/bob/0/name", "Alice")
 if err != nil {
 	panic(err)
