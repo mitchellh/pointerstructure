@@ -84,6 +84,38 @@ func TestPointerGet(t *testing.T) {
 			"baz",
 			false,
 		},
+
+		{
+			"slice key",
+			[]string{"3"},
+			[]interface{}{"a", "b", "c", "d", "e"},
+			"d",
+			false,
+		},
+
+		{
+			"slice key non-existent",
+			[]string{"7"},
+			[]interface{}{"a", "b", "c", "d", "e"},
+			nil,
+			true,
+		},
+
+		{
+			"slice key below zero",
+			[]string{"-1"},
+			[]interface{}{"a", "b", "c", "d", "e"},
+			nil,
+			true,
+		},
+
+		{
+			"array key",
+			[]string{"3"},
+			[5]interface{}{"a", "b", "c", "d", "e"},
+			"d",
+			false,
+		},
 	}
 
 	for i, tc := range cases {
