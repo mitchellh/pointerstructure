@@ -7,6 +7,7 @@ package pointerstructure
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -49,6 +50,25 @@ func Set(doc interface{}, pointer string, value interface{}) (interface{}, error
 	}
 
 	return p.Set(doc, value)
+}
+
+// String returns the string value that can be sent back to Parse to get
+// the same Pointer result.
+func (p *Pointer) String() string {
+	if len(p.Parts) == 0 {
+		return ""
+	}
+
+	// Copy the parts so we can convert back the escapes
+	result := make([]string, len(p.Parts))
+	copy(result, p.Parts)
+	for i, p := range p.Parts {
+		result[i] = strings.Replace(
+			strings.Replace(p, "~", "~0", -1), "/", "~1", -1)
+
+	}
+
+	return "/" + strings.Join(result, "/")
 }
 
 // Parent returns a pointer to the parent element of this pointer.

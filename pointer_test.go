@@ -43,3 +43,23 @@ func TestPointerParent(t *testing.T) {
 		})
 	}
 }
+
+func TestPointerString(t *testing.T) {
+	cases := []string{
+		"/foo",
+		"/foo/bar",
+		"/foo/bar~0",
+		"/foo/bar~1",
+		"/foo/bar~01/baz",
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			p := MustParse(tc)
+			actual := p.String()
+			if actual != tc {
+				t.Fatalf("bad: %#v", actual)
+			}
+		})
+	}
+}
