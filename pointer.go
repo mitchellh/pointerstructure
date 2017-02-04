@@ -27,6 +27,23 @@ func Get(value interface{}, pointer string) (interface{}, error) {
 	return p.Get(value)
 }
 
+// Set sets the value at the given pointer.
+//
+// This is a shorthand for calling Parse on the pointer and then calling Set
+// on that result. An error will be returned if the value cannot be found or
+// there is an error with the format of pointer.
+//
+// Set returns the complete document, which might change if the pointer value
+// points to the root ("").
+func Set(doc interface{}, pointer string, value interface{}) (interface{}, error) {
+	p, err := Parse(pointer)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.Set(doc, value)
+}
+
 // Parent returns a pointer to the parent element of this pointer.
 //
 // If Pointer represents the root (empty parts), a pointer representing

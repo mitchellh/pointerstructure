@@ -50,3 +50,16 @@ fmt.Printf("%s", value)
 // Output:
 // Bob
 ```
+
+Continuing the example above, you can also set values:
+
+```
+value, err = pointerstructure.Set(complex, "/bob/0/name", "Alice")
+if err != nil {
+	panic(err)
+}
+
+fmt.Printf("%s", value)
+// Output:
+// Alice
+```
