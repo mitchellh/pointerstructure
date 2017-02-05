@@ -34,7 +34,7 @@ func TestSort(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			ps := make([]*Pointer, 0)
+			var ps []*Pointer
 			for _, raw := range tc.Input {
 				ps = append(ps, MustParse(raw))
 			}
