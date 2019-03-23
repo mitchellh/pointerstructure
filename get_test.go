@@ -116,6 +116,14 @@ func TestPointerGet(t *testing.T) {
 			"d",
 			false,
 		},
+
+		{
+			"struct key",
+			[]string{"Key"},
+			&struct{ Key string }{Key: "foo"},
+			"foo",
+			false,
+		},
 	}
 
 	for i, tc := range cases {
