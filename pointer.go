@@ -5,7 +5,6 @@
 package pointerstructure
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -113,8 +112,8 @@ func coerce(value reflect.Value, to reflect.Type) (reflect.Value, error) {
 
 	// Decode
 	if err := mapstructure.WeakDecode(value.Interface(), result.Interface()); err != nil {
-		return result, fmt.Errorf(
-			"%w %#v to type %s", ErrConvert,
+		return result, newError(
+			"{{CAUSE}} %#v to type %s", ErrConvert,
 			value.Interface(), to.String())
 	}
 

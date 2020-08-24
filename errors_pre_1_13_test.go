@@ -1,7 +1,9 @@
+// +build !go1.13
+
 package pointerstructure
 
 import (
-	"errors"
+	"strings"
 	"testing"
 )
 
@@ -24,35 +26,35 @@ const (
 
 func TestErrParse(t *testing.T) {
 	_, err := Parse(unparsable)
-	if !errors.Is(err, ErrParse) {
+	if !strings.Contains(err.Error(), ErrParse.Error()) {
 		t.Fatalf("expected ErrParse in the error chain, but it was not")
 	}
 }
 
 func TestErrNotFound(t *testing.T) {
 	_, err := Get(structure, notFound)
-	if !errors.Is(err, ErrNotFound) {
+	if !strings.Contains(err.Error(), ErrNotFound.Error()) {
 		t.Fatalf("expected ErrNotFound in the error chain, but it was not")
 	}
 }
 
 func TestErrOutOfRange(t *testing.T) {
 	_, err := Get(structure, outOfRange)
-	if !errors.Is(err, ErrOutOfRange) {
+	if !strings.Contains(err.Error(), ErrOutOfRange.Error()) {
 		t.Fatalf("expected ErrOutOfRange in the error chain, but it was not")
 	}
 }
 
 func TestErrConvert(t *testing.T) {
 	_, err := Set(structure, cantConvert, "test")
-	if !errors.Is(err, ErrConvert) {
+	if !strings.Contains(err.Error(), ErrConvert.Error()) {
 		t.Fatalf("expected ErrConvert in the error chain, but it was not")
 	}
 }
 
 func TestErrInvalidKind(t *testing.T) {
 	_, err := Get(structure, invalidKind)
-	if !errors.Is(err, ErrInvalidKind) {
+	if !strings.Contains(err.Error(), ErrInvalidKind.Error()) {
 		t.Fatalf("expected ErrInvalidKind in the error chain, but it was not")
 	}
 }

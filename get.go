@@ -1,7 +1,6 @@
 package pointerstructure
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -32,14 +31,14 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 
 		f, ok := funcMap[currentVal.Kind()]
 		if !ok {
-			return nil, fmt.Errorf(
-				"%s: at part %d, %w: %s", p, i, ErrInvalidKind, currentVal.Kind())
+			return nil, newError(
+				"%s: at part %d, {{CAUSE}}: %s", p, i, ErrInvalidKind, currentVal.Kind())
 		}
 
 		var err error
 		currentVal, err = f(part, currentVal)
 		if err != nil {
-			return nil, fmt.Errorf("%s at part %d: %w", p, i, err)
+			return nil, newError("%s at part %d: {{CAUSE}}", p, i, err)
 		}
 	}
 
@@ -64,7 +63,7 @@ func (p *Pointer) getMap(part string, m reflect.Value) (reflect.Value, error) {
 		}
 	}
 	if !found {
-		return zeroValue, fmt.Errorf("%w %#v", ErrNotFound, key.Interface())
+		return zeroValue, newError("{{CAUSE}} %#v", ErrNotFound, key.Interface())
 	}
 
 	// Get the key
@@ -83,8 +82,8 @@ func (p *Pointer) getSlice(part string, v reflect.Value) (reflect.Value, error) 
 
 	// Verify we're within bounds
 	if idx < 0 || idx >= v.Len() {
-		return zeroValue, fmt.Errorf(
-			"index %d is %w (length = %d)", idx, ErrOutOfRange, v.Len())
+		return zeroValue, newError(
+			"index %d is {{CAUSE}} (length = %d)", idx, ErrOutOfRange, v.Len())
 	}
 
 	// Get the key
