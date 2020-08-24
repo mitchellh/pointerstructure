@@ -114,7 +114,7 @@ func coerce(value reflect.Value, to reflect.Type) (reflect.Value, error) {
 	// Decode
 	if err := mapstructure.WeakDecode(value.Interface(), result.Interface()); err != nil {
 		return result, fmt.Errorf(
-			"couldn't convert value %#v to type %s",
+			"%w %#v to type %s", ErrConvert,
 			value.Interface(), to.String())
 	}
 
