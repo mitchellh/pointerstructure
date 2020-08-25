@@ -1,10 +1,6 @@
 package pointerstructure
 
-import (
-	"errors"
-	"fmt"
-	"strings"
-)
+import "errors"
 
 var (
 	// ErrNotFound is returned if a key in a query can't be found
@@ -24,8 +20,3 @@ var (
 	// ErrConvert is returned if an item is not of a requested type
 	ErrConvert = errors.New("couldn't convert value")
 )
-
-func newError(format string, args ...interface{}) error {
-	newFormat := strings.Replace(format, "{{CAUSE}}", errPlaceholder, -1)
-	return fmt.Errorf(newFormat, args...)
-}

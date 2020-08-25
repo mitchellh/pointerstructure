@@ -1,6 +1,7 @@
 package pointerstructure
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -45,12 +46,12 @@ func (p *Pointer) Set(s, v interface{}) (interface{}, error) {
 
 	f, ok := funcMap[val.Kind()]
 	if !ok {
-		return nil, newError("set %s: {{CAUSE}}: %s", p, ErrInvalidKind, val.Kind())
+		return nil, fmt.Errorf("set %s: %w: %s", p, ErrInvalidKind, val.Kind())
 	}
 
 	result, err := f(originalS, val, reflect.ValueOf(v))
 	if err != nil {
-		return nil, newError("set %s: {{CAUSE}}", p, err)
+		return nil, fmt.Errorf("set %s: %w", p, err)
 	}
 
 	return result, nil
@@ -97,8 +98,8 @@ func (p *Pointer) setSlice(root interface{}, s, value reflect.Value) (interface{
 
 	// Verify we're within bounds
 	if idx < 0 || idx >= s.Len() {
-		return root, newError(
-			"index %d is {{CAUSE}} (length = %d)", idx, ErrOutOfRange, s.Len())
+		return root, fmt.Errorf(
+			"index %d is %w (length = %d)", idx, ErrOutOfRange, s.Len())
 	}
 
 	// Set the key
