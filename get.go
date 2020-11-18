@@ -38,13 +38,13 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 		f, ok := funcMap[currentVal.Kind()]
 		if !ok {
 			return nil, fmt.Errorf(
-				"%s: at part %d, invalid value kind: %s", p, i, currentVal.Kind())
+				"%s: at part %d, %w: %s", p, i, ErrInvalidKind, currentVal.Kind())
 		}
 
 		var err error
 		currentVal, err = f(part, currentVal)
 		if err != nil {
-			return nil, fmt.Errorf("%s at part %d: %s", p, i, err)
+			return nil, fmt.Errorf("%s at part %d: %w", p, i, err)
 		}
 	}
 
@@ -69,7 +69,7 @@ func (p *Pointer) getMap(part string, m reflect.Value) (reflect.Value, error) {
 		}
 	}
 	if !found {
-		return zeroValue, fmt.Errorf("couldn't find key %#v", key.Interface())
+		return zeroValue, fmt.Errorf("%w %#v", ErrNotFound, key.Interface())
 	}
 
 	// Get the key
@@ -89,7 +89,7 @@ func (p *Pointer) getSlice(part string, v reflect.Value) (reflect.Value, error) 
 	// Verify we're within bounds
 	if idx < 0 || idx >= v.Len() {
 		return zeroValue, fmt.Errorf(
-			"index %d is out of range (length = %d)", idx, v.Len())
+			"index %d is %w (length = %d)", idx, ErrOutOfRange, v.Len())
 	}
 
 	// Get the key
