@@ -3,9 +3,14 @@ package pointerstructure
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // Get reads the value out of the total value v.
+//
+// For struct values a `pointer:"<name>"` tag on the struct's
+// fields may be used to override that field's name for lookup purposes.
+// Alternatively the tag name used can be overridden in the `Config`.
 func (p *Pointer) Get(v interface{}) (interface{}, error) {
 	// fast-path the empty address case to avoid reflect.ValueOf below
 	if len(p.Parts) == 0 {
@@ -92,5 +97,59 @@ func (p *Pointer) getSlice(part string, v reflect.Value) (reflect.Value, error) 
 }
 
 func (p *Pointer) getStruct(part string, m reflect.Value) (reflect.Value, error) {
-	return m.FieldByName(part), nil
+	var foundField reflect.Value
+	var found bool
+	var ignored bool
+	typ := m.Type()
+
+	tagName := p.Config.TagName
+	if tagName == "" {
+		tagName = "pointer"
+	}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+
+		if field.PkgPath != "" {
+			// this is an unexported field so ignore it
+			continue
+		}
+
+		fieldTag := field.Tag.Get(tagName)
+
+		if fieldTag != "" {
+			if strings.ContainsAny(fieldTag, ",|") {
+				// should this panic instead?
+				return foundField, fmt.Errorf("pointer struct tag cannot contain the ',' or '|' characters")
+			}
+
+			if fieldTag == "-" {
+				// we should ignore this field but cannot immediately return because its possible another
+				// field has a tag that would allow it to assume this ones name.
+
+				if field.Name == part {
+					found = true
+					ignored = true
+				}
+				continue
+			} else if fieldTag == part {
+				// we can go ahead and return now as the tag is enough to
+				// indicate that this is the correct field
+				return m.Field(i), nil
+			}
+		} else if field.Name == part {
+			foundField = m.Field(i)
+			found = true
+		}
+	}
+
+	if !found {
+		return reflect.Value{}, fmt.Errorf("couldn't find struct field with name %q", part)
+	}
+
+	if ignored {
+		return reflect.Value{}, fmt.Errorf("struct field %q is ignored and cannot be used", part)
+	}
+
+	return foundField, nil
 }
