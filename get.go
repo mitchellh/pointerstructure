@@ -118,9 +118,13 @@ func (p *Pointer) getStruct(part string, m reflect.Value) (reflect.Value, error)
 		fieldTag := field.Tag.Get(tagName)
 
 		if fieldTag != "" {
-			if strings.ContainsAny(fieldTag, ",|") {
+			if idx := strings.Index(fieldTag, ","); idx != -1 {
+				fieldTag = fieldTag[0:idx]
+			}
+
+			if strings.Contains(fieldTag, "|") {
 				// should this panic instead?
-				return foundField, fmt.Errorf("pointer struct tag cannot contain the ',' or '|' characters")
+				return foundField, fmt.Errorf("pointer struct tag cannot contain the '|' character")
 			}
 
 			if fieldTag == "-" {

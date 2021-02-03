@@ -186,11 +186,22 @@ func TestPointerGet(t *testing.T) {
 		},
 
 		{
-			"struct tag invalid",
-			[]string{"synthetic,name"},
-			"",
+			"struct tag ignore after comma",
+			[]string{"synthetic"},
+			"pointer",
 			&struct {
 				Key string `pointer:"synthetic,name"`
+			}{Key: "foo"},
+			"foo",
+			false,
+		},
+
+		{
+			"struct tag invalid",
+			[]string{"synthetic|name"},
+			"",
+			&struct {
+				Key string `pointer:"synthetic|name"`
 			}{Key: "foo"},
 			"",
 			true,
