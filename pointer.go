@@ -12,10 +12,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// GetValueHookFn is called for each field that matches a pointer part.
+// The returned reflect.Value is used for searching for the remaining parts
+// in the pointer.
+type GetValueHookFn func(reflect.Value) reflect.Value
+
 type Config struct {
 	// The tag name that pointerstructure reads for field names. This
 	// defaults to "pointer"
 	TagName string
+	// The hook that is executed after each field is found that matches the
+	// pointer part to translate from one value to another.
+	GetHook GetValueHookFn
 }
 
 // Pointer represents a pointer to a specific value. You can construct

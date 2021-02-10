@@ -46,6 +46,12 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s at part %d: %w", p, i, err)
 		}
+		if p.Config.GetHook != nil {
+			currentVal = p.Config.GetHook(currentVal)
+			if currentVal == reflect.ValueOf(nil) {
+				return nil, fmt.Errorf("%s at part %d: GetHook returned the value of a nil interface", p, i)
+			}
+		}
 	}
 
 	return currentVal.Interface(), nil
