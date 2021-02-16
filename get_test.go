@@ -64,7 +64,15 @@ func TestPointerGet_Hook(t *testing.T) {
 			Err:    true,
 		},
 		{
-			Name:  "single",
+			Name:   "top level replace",
+			Parts:  []string{},
+			Hook:   hookForInterface,
+			Input:  embedded{S: "foo"},
+			Output: "foo",
+			Err:    false,
+		},
+		{
+			Name:  "1 deep replace",
 			Parts: []string{"Key"},
 			Hook:  hookForInterface,
 			Input: &struct {
@@ -74,7 +82,7 @@ func TestPointerGet_Hook(t *testing.T) {
 			Err:    false,
 		},
 		{
-			Name:  "two levels last",
+			Name:  "2 deep replace",
 			Parts: []string{"Key", "S2"},
 			Hook:  hookForInterface,
 			Input: &struct {
