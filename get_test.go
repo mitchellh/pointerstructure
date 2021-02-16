@@ -64,11 +64,11 @@ func TestPointerGet_Hook(t *testing.T) {
 			Err:    true,
 		},
 		{
-			Name:   "top level replace",
+			Name:   "top level don't replace",
 			Parts:  []string{},
 			Hook:   hookForInterface,
 			Input:  embedded{S: "foo"},
-			Output: "foo",
+			Output: embedded{S: "foo"},
 			Err:    false,
 		},
 		{

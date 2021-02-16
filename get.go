@@ -12,18 +12,9 @@ import (
 // fields may be used to override that field's name for lookup purposes.
 // Alternatively the tag name used can be overridden in the `Config`.
 func (p *Pointer) Get(v interface{}) (interface{}, error) {
-	currentVal := reflect.ValueOf(v)
-	if p.Config.GetHook != nil {
-		currentVal = p.Config.GetHook(currentVal)
-		if currentVal == reflect.ValueOf(nil) {
-			return nil, fmt.Errorf("%s at top level: GetHook returned the value of a nil interface", p)
-		}
-	}
-
 	// fast-path the empty address case to avoid reflect.ValueOf below
-	// Run the hook on the first value under search.
 	if len(p.Parts) == 0 {
-		return currentVal.Interface(), nil
+		return v, nil
 	}
 
 	// Map for lookup of getter to call for type
@@ -33,6 +24,8 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 		reflect.Slice:  p.getSlice,
 		reflect.Struct: p.getStruct,
 	}
+
+	currentVal := reflect.ValueOf(v)
 	for i, part := range p.Parts {
 		for currentVal.Kind() == reflect.Interface {
 			currentVal = currentVal.Elem()
