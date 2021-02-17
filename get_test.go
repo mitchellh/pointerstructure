@@ -38,7 +38,7 @@ func TestPointerGet_Hook(t *testing.T) {
 	cases := []struct {
 		Name   string
 		Parts  []string
-		Hook   GetValueHookFn
+		Hook   ValueTransformationHookFn
 		Input  interface{}
 		Output interface{}
 		Err    bool
@@ -144,7 +144,7 @@ func TestPointerGet_Hook(t *testing.T) {
 			p := &Pointer{
 				Parts: tc.Parts,
 				Config: Config{
-					GetHook: tc.Hook,
+					ValueTransformationHook: tc.Hook,
 				},
 			}
 			actual, err := p.Get(tc.Input)

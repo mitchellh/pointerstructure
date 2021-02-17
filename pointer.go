@@ -12,18 +12,21 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// GetValueHookFn is called for each field that matches a pointer part.
-// The returned reflect.Value is used for searching for the remaining parts
-// in the pointer.
-type GetValueHookFn func(reflect.Value) reflect.Value
+// ValueTransformationHookFn transforms a go data structure into another.
+// This is useful for situations where you want the json pointer to not match
+// exactly the structure of the go data structure, for example when working
+// with protocol buffers' well known types.
+type ValueTransformationHookFn func(reflect.Value) reflect.Value
 
 type Config struct {
 	// The tag name that pointerstructure reads for field names. This
 	// defaults to "pointer"
 	TagName string
-	// The hook that is executed after each field is found that matches the
-	// pointer part to translate from one value to another.
-	GetHook GetValueHookFn
+	// ValueTransformationHook is called on each field which matches the
+	// provided json pointer when Get is used.  The returned value from this
+	// hook is then used for matching for all following parts of the json
+	// pointer.  If this returns a nil interface Get will return an error.
+	ValueTransformationHook ValueTransformationHookFn
 }
 
 // Pointer represents a pointer to a specific value. You can construct
