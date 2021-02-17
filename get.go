@@ -46,6 +46,12 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s at part %d: %w", p, i, err)
 		}
+		if p.Config.ValueTransformationHook != nil {
+			currentVal = p.Config.ValueTransformationHook(currentVal)
+			if currentVal == reflect.ValueOf(nil) {
+				return nil, fmt.Errorf("%s at part %d: ValueTransformationHook returned the value of a nil interface", p, i)
+			}
+		}
 	}
 
 	return currentVal.Interface(), nil

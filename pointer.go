@@ -12,10 +12,21 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// ValueTransformationHookFn transforms a Go data structure into another.
+// This is useful for situations where you want the JSON Pointer to not be an
+// exact match to the structure of the Go struct or map, for example when
+// working with protocol buffers' well-known types.
+type ValueTransformationHookFn func(reflect.Value) reflect.Value
+
 type Config struct {
 	// The tag name that pointerstructure reads for field names. This
 	// defaults to "pointer"
 	TagName string
+	// ValueTransformationHook is called on each reference token within the
+	// provided JSON Pointer when Get is used.  The returned value from this
+	// hook is then used for matching for all following parts of the JSON
+	// Pointer.  If this returns a nil interface Get will return an error.
+	ValueTransformationHook ValueTransformationHookFn
 }
 
 // Pointer represents a pointer to a specific value. You can construct
