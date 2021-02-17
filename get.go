@@ -49,7 +49,7 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 		if p.Config.ValueTransformationHook != nil {
 			currentVal = p.Config.ValueTransformationHook(currentVal)
 			if currentVal == reflect.ValueOf(nil) {
-				return nil, fmt.Errorf("%s at part %d: TraversalTranslationHook returned the value of a nil interface", p, i)
+				return nil, fmt.Errorf("%s at part %d: ValueTransformationHook returned the value of a nil interface", p, i)
 			}
 		}
 	}
