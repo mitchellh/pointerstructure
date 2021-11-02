@@ -36,6 +36,15 @@ func TestErrNotFound(t *testing.T) {
 	}
 }
 
+func TestErrNotFound_structKey(t *testing.T) {
+	_, err := Get(struct {
+		Nope string
+	}{}, notFound)
+	if !errors.Is(err, ErrNotFound) {
+		t.Fatalf("expected ErrNotFound in the error chain, but it was not")
+	}
+}
+
 func TestErrOutOfRange(t *testing.T) {
 	_, err := Get(structure, outOfRange)
 	if !errors.Is(err, ErrOutOfRange) {

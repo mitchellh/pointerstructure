@@ -154,7 +154,7 @@ func (p *Pointer) getStruct(part string, m reflect.Value) (reflect.Value, error)
 	}
 
 	if !found {
-		return reflect.Value{}, fmt.Errorf("couldn't find struct field with name %q", part)
+		return reflect.Value{}, fmt.Errorf("%w: struct field with name %q", ErrNotFound, part)
 	}
 
 	if ignored {
