@@ -362,6 +362,42 @@ func TestPointerGet(t *testing.T) {
 			"",
 			true,
 		},
+
+		{
+			"Defaults is empty",
+			[]string{"foo"},
+			"",
+			Defaults{},
+			"bar",
+			true,
+		},
+
+		{
+			"Defaults found",
+			[]string{"foo"},
+			"",
+			Defaults{map[string]interface{}{"foo": "bar"}},
+			"bar",
+			false,
+		},
+
+		{
+			"Defaults overriden",
+			[]string{"foo"},
+			"",
+			Defaults{map[string]interface{}{"foo": "baz"}, map[string]interface{}{"foo": "bar"}},
+			"baz",
+			false,
+		},
+
+		{
+			"Defaults not found",
+			[]string{"var"},
+			"",
+			Defaults{map[string]interface{}{"foo": "baz"}, map[string]interface{}{"foo": "bar"}},
+			"",
+			true,
+		},
 	}
 
 	for i, tc := range cases {

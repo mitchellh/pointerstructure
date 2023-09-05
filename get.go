@@ -1,10 +1,16 @@
 package pointerstructure
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 )
+
+// Defaults is a list of values. Pointer.Get() will look for its target in the
+// first value, then in the next until it find one or reaches the end of the list.
+// This can be used to support more complex usages with pointerstructure.
+type Defaults []interface{}
 
 // Get reads the value out of the total value v.
 //
@@ -18,11 +24,20 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 	}
 
 	// Map for lookup of getter to call for type
-	funcMap := map[reflect.Kind]func(string, reflect.Value) (reflect.Value, error){
-		reflect.Array:  p.getSlice,
-		reflect.Map:    p.getMap,
-		reflect.Slice:  p.getSlice,
-		reflect.Struct: p.getStruct,
+	get := func(part string, val reflect.Value) (reflect.Value, error) {
+		switch val.Kind() {
+		case reflect.Array:
+			return p.getSlice(part, val)
+		case reflect.Map:
+			return p.getMap(part, val)
+		case reflect.Slice:
+			return p.getSlice(part, val)
+		case reflect.Struct:
+			return p.getStruct(part, val)
+		}
+
+		var zeroval reflect.Value
+		return zeroval, fmt.Errorf("%w (%s)", ErrInvalidKind, val.Kind())
 	}
 
 	currentVal := reflect.ValueOf(v)
@@ -35,17 +50,37 @@ func (p *Pointer) Get(v interface{}) (interface{}, error) {
 			currentVal = reflect.Indirect(currentVal)
 		}
 
-		f, ok := funcMap[currentVal.Kind()]
-		if !ok {
-			return nil, fmt.Errorf(
-				"%s: at part %d, %w: %s", p, i, ErrInvalidKind, currentVal.Kind())
-		}
-
 		var err error
-		currentVal, err = f(part, currentVal)
+		if mv, ok := currentVal.Interface().(Defaults); ok {
+			if len(mv) == 0 {
+				err = ErrNotFound
+			} else {
+				for _, v := range mv {
+					val := reflect.ValueOf(v)
+					for val.Kind() == reflect.Interface {
+						val = val.Elem()
+					}
+
+					for val.Kind() == reflect.Ptr {
+						val = reflect.Indirect(val)
+					}
+
+					currentVal, err = get(part, val)
+					if errors.Is(err, ErrNotFound) {
+						continue
+					}
+					if err == nil {
+						break
+					}
+				}
+			}
+		} else {
+			currentVal, err = get(part, currentVal)
+		}
 		if err != nil {
 			return nil, fmt.Errorf("%s at part %d: %w", p, i, err)
 		}
+
 		if p.Config.ValueTransformationHook != nil {
 			currentVal = p.Config.ValueTransformationHook(currentVal)
 			if currentVal == reflect.ValueOf(nil) {
